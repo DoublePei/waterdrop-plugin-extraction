@@ -178,6 +178,12 @@ class SubTableSql extends BaseFilter {
         sb.append("PARTITIONED BY ( _shard string)")
       }
       sb.append("stored as parquet ")
+      if(this.conf.hasPath("location")){
+        if(this.conf.getString("location")!=null || !this.conf.getString("location").equals("")){
+          val location = this.conf.getString("location")
+          sb.append(s" location '$location'")
+        }
+      }
       println(sb.toString())
       log.info(s"####################### create sql is : $sb #############################")
       spark.sql(sb.toString())

@@ -81,9 +81,10 @@ class SyncToHive extends BaseFilter {
     }
     sb.append("stored as parquet ")
     if(this.conf.hasPath("location")){
-      val location = this.conf.getString("location")
-      sb.append(s" location '$location'")
-
+      if(this.conf.getString("location")!=null || !this.conf.getString("location").equals("")){
+        val location = this.conf.getString("location")
+        sb.append(s" location '$location'")
+      }
     }
 
     println(sb.toString())
