@@ -171,11 +171,11 @@ class SubTableSql extends BaseFilter {
           val key = keys(i)
           sb.append(s" $key string ,")
         }
-        sb.append("_shard string,")
+        sb.append("shard string,")
         sb = sb.deleteCharAt(sb.length - 1)
         sb.append(")")
       } else {
-        sb.append("PARTITIONED BY ( _shard string)")
+        sb.append("PARTITIONED BY ( shard string)")
       }
       sb.append("stored as parquet ")
       if(this.conf.hasPath("location")){
@@ -198,10 +198,10 @@ class SubTableSql extends BaseFilter {
           val value = values(i)
           sql.append(s" $key=$value,")
         }
-        sql.append(s" _shard = '$tableName'")
+        sql.append(s" shard = '$tableName'")
         sql.append(")")
       } else {
-        sql.append(s"PARTITION (_shard='$tableName')")
+        sql.append(s"PARTITION (shard='$tableName')")
       }
 
       val columnlist = fieldNames.mkString(",")
