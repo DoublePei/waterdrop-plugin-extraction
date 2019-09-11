@@ -76,17 +76,33 @@ class MyJdbcById extends BaseStaticInput {
       case 1 => {
         if (ds.collect()(0).schema.fields(0).dataType.isInstanceOf[IntegerType]) {
           val a = ds.collect()(0).getAs[Int](0)
-          val b = ds.collect()(0).getAs[Int](1)
-          lower = java.lang.Long.parseLong(String.valueOf(a))
-          upper = java.lang.Long.parseLong(String.valueOf(b))
+          if (a == null || a.equals("null")) {
+            lower=0l
+            upper=0l
+          }else {
+            val b = ds.collect()(0).getAs[Int](1)
+            lower = java.lang.Long.parseLong(String.valueOf(a))
+            upper = java.lang.Long.parseLong(String.valueOf(b))
+          }
         } else if (ds.collect()(0).schema.fields(0).dataType.isInstanceOf[DecimalType]) {
           val a = ds.collect()(0).getAs[java.math.BigDecimal](0)
-          val b = ds.collect()(0).getAs[java.math.BigDecimal](1)
-          lower = java.lang.Long.parseLong(String.valueOf(a))
-          upper = java.lang.Long.parseLong(String.valueOf(b))
+          if (a == null || a.equals("null")) {
+            lower=0l
+            upper=0l
+          }else {
+            val b = ds.collect()(0).getAs[java.math.BigDecimal](1)
+            lower = java.lang.Long.parseLong(String.valueOf(a))
+            upper = java.lang.Long.parseLong(String.valueOf(b))
+          }
         } else {
-          lower = ds.collect()(0).getAs[Long](0)
-          upper = ds.collect()(0).getLong(1)
+          val a= ds.collect()(0).getAs[Long](0);
+          if (a == null || a.equals("null")) {
+            lower=0l
+            upper=0l
+          }else {
+            lower = ds.collect()(0).getAs[Long](0)
+            upper = ds.collect()(0).getLong(1)
+          }
         }
         (lower, upper)
       }
