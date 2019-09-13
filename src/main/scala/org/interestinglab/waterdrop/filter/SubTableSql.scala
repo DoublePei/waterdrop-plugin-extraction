@@ -115,7 +115,7 @@ class SubTableSql extends BaseFilter {
               upper=0l
             }else {
               lower = ds.collect()(0).getAs[Long](0)
-              upper = ds.collect()(0).getLong(1)
+              upper = ds.collect()(0).getAs[Long](1)
             }
           }
           (lower, upper)
