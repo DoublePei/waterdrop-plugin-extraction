@@ -80,8 +80,8 @@ class SyncToHive extends BaseFilter {
       sb.append(")")
     }
     sb.append("stored as parquet ")
-    if(this.conf.hasPath("location")){
-      if(this.conf.getString("location")!=null || !this.conf.getString("location").equals("")){
+    if (this.conf.hasPath("location")) {
+      if (this.conf.getString("location") != null || !this.conf.getString("location").equals("")) {
         val location = this.conf.getString("location")
         sb.append(s" location '$location'")
       }
@@ -105,7 +105,9 @@ class SyncToHive extends BaseFilter {
       sql.append(")")
     }
 
-    val columns = fieldNames.mkString(",")
+    val columns = fieldNames.map(filed => {
+      s"`$filed`"
+    }).mkString(",")
 
     sql.append(s" select $columns from $tableName ")
 
