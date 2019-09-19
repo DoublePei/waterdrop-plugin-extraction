@@ -6,6 +6,8 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.types.{BooleanType, ByteType, DateType, DecimalType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType}
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
 
+import scala.util.{Failure, Success, Try}
+
 class SyncToHive extends BaseFilter {
 
   var conf: Config = ConfigFactory.empty()
@@ -115,8 +117,17 @@ class SyncToHive extends BaseFilter {
     log.info(s"####################### insert sql is : $sql #############################")
 
     df.createOrReplaceTempView(tableName.toString)
+    create_task(spark.sql(sql.toString()).repartition(repartition)) match {
+      case Success(ds) => ds
+      case Failure(f) => {
+        println(f)
+        System.exit(1)
+        df
+      }
+    }
+  }
 
-    spark.sql(sql.toString()).repartition(repartition)
-
+  def create_task(ds: Dataset[Row]): Try[Dataset[Row]] = {
+    Try(ds)
   }
 }
