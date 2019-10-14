@@ -7,7 +7,7 @@ import org.apache.spark.sql.{Dataset, Row, SparkSession}
 
 import scala.collection.mutable.ArrayBuffer
 
-class MyJdbcByTime extends BaseStaticInput {
+class MyJdbcBy extends BaseStaticInput {
 
   var config: Config = ConfigFactory.empty()
 

@@ -53,7 +53,12 @@ class MyJdbcById extends BaseStaticInput {
     val columns = column.replaceAll("\\s", "")
     val repartition = config.getInt("repartition")
     val where = config.getString("where")
-
+    val driver = config.hasPath("driver") match {
+      case true => {
+        config.getString("driver")
+      }
+      case false => "com.mysql.jdbc.Driver"
+    }
 
     var sql = ""
     if (where != null && !"".equals(where)) {
@@ -62,7 +67,7 @@ class MyJdbcById extends BaseStaticInput {
       sql = s"select max($split),min($split) from $tableName"
     }
     val ds = spark.read.format("jdbc")
-      .option("driver", "com.mysql.jdbc.Driver")
+      .option("driver", driver)
       .option("url", url)
       .option("dbtable", s"($sql) tmp")
       .option("user", user)
@@ -127,13 +132,10 @@ class MyJdbcById extends BaseStaticInput {
       }
     }
     val arr = predicates.toArray
-
-    arr.foreach(println(_))
-
     val prop = new java.util.Properties
     prop.setProperty("user", user)
     prop.setProperty("password", password)
-    prop.setProperty("driver", "com.mysql.jdbc.Driver")
+    prop.setProperty("driver", driver)
     var frame = spark.read.jdbc(url, tableName, arr, prop)
     val strings = columns.split(",")
     val names = frame.schema.fieldNames
