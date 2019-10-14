@@ -55,7 +55,7 @@ class SyncToHive extends BaseFilter {
       val name = x.name
       sb.append(s"$name ")
       x.dataType match {
-        case IntegerType | BooleanType | LongType | DecimalType() | ByteType | ShortType => {
+        case IntegerType | BooleanType | LongType | ByteType | ShortType => {
           sb.append(s" bigint ,")
         }
         case FloatType | DoubleType => {
@@ -63,6 +63,16 @@ class SyncToHive extends BaseFilter {
         }
         case StringType | TimestampType | DateType => {
           sb.append(s" string ,")
+        }
+        case dt: DecimalType =>{
+           dt.scale match {
+             case  0  => {
+               sb.append(s" bigint ,")
+             }
+             case _ =>{
+               sb.append(s" double ,")
+             }
+           }
         }
         case _ => {
           sb.append(s" string ,")
