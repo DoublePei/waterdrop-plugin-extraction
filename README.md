@@ -15,8 +15,6 @@
 - 支持 hive 建表 with comments from mysql
 - 
 
-从airflow，gobblin，或者sqoop 转为waterdrop自研的优点与好处
-
 技术改善点：
 
 1. select * 改成显式指定 columns, 避免业务库加字段导致 hive 表错位
