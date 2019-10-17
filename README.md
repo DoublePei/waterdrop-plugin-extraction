@@ -36,3 +36,101 @@
 未解决的点:
 1.更改字段比较麻烦。
 2.无法同步mysql的comment信息
+
+
+
+
+### 支持的场景
+
+- 分表从mysql-hive
+- mysql-hive 两种并发方式(索引是否跨度大)
+- hive-redis 支持redis两种数据类型 string 和 hash
+- hive-clickhouse 
+
+下面介绍一下自定义的插件
+
+### 1.org.interestinglab.waterdrop.input.MyJdbcById
+
+用法：该组建的作用是通过ID分组，提高并发抽取mysql数据量。不适用于索引跨度比较大。
+
+```java
+input {
+org.interestinglab.waterdrop.input.MyJdbc {
+#mysql地址
+url="jdbc:mysql://rm-2ze8c14le223oqy07.mysql.rds.aliyuncs.com/short_video?zeroDateTimeBehavior=convertToNull"
+#想要同步的表
+table="short_video"
+#默认参数
+table_name="waterdrop_log"
+#将colmn分成多少份数据如果有特别大的数据倾斜不太好使
+repartition="100"
+#必填整型的自增列
+column="id"
+user="shucang_video_r"
+password="AByAh9peFbJdRTOH"
+#默认参数
+result_table_name="access_log"
+}
+}
+```
+
+### 2. org.interestinglab.waterdrop.input.SubTable 与filter org.interestinglab.waterdrop.filter.SubTableSql 相结合使用 用来从mysql的多表同步到Hive
+
+用法：主要是配置上相同步的mysql数据表的正则表达式，将表查询出来之后循环插入
+
+```java
+input {
+org.interestinglab.waterdrop.input.SubTable {
+url = "jdbc:mysql://rr-2zesjit2vg745on83.mysql.rds.aliyuncs.com/qukan?zeroDateTimeBehavior=convertToNull"
+table_name = "waterdrop_log"
+tableRegexp="reward_00*"
+database="qukan"
+table = "any"
+user = "qukan_data_r"
+password = "Uf3uz44W"
+}
+}
+
+filter {
+org.interestinglab.waterdrop.filter.SubTableSql {
+sql = "insert into table test.reward_regexp_jpp select id,content_id,member_id,coins,reward_times,create_time,update_time from waterdrop_log"
+table_name = "waterdrop_log"
+url = "jdbc:mysql://rr-2zesjit2vg745on83.mysql.rds.aliyuncs.com/qukan?zeroDateTimeBehavior=convertToNull"
+table = "any"
+repartition = "10"
+column = "id"
+user = "qukan_data_r"
+password = "Uf3uz44W"
+}
+}
+```
+
+
+### 3. org.interestinglab.waterdrop.input.MyJdbcByMod
+
+用法：如果mysql索引分布不均匀可以选用这个插件。将ID取模平均分组
+
+```java 
+input {
+org.interestinglab.waterdrop.input.MyJdbcByMod {
+#mysql地址
+url="jdbc:mysql://rm-2ze8c14le223oqy07.mysql.rds.aliyuncs.com/short_video?zeroDateTimeBehavior=convertToNull"
+#想要同步的表
+table="short_video"
+#默认参数
+table_name="waterdrop_log"
+#将colmn分成多少份数据如果有特别大的数据倾斜不太好使
+repartition="100"
+#必填整型的自增列
+column="id"
+user="shucang_video_r"
+password="AByAh9peFbJdRTOH"
+#默认参数
+result_table_name="access_log"
+}
+}
+```
+
+
+
+
