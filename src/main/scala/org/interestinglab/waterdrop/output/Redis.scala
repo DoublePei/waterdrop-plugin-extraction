@@ -68,6 +68,12 @@ class Redis extends BaseOutput {
 
   override def process(ds: Dataset[Row]): Unit = {
 
+    val threads = config.hasPath("threads") match {
+      case true => {
+        config.getInt("threads")
+      }
+      case _ => 1000
+    }
     ds.schema.size match {
       case 2 => {
         ds.foreachPartition(rows => {
@@ -77,7 +83,7 @@ class Redis extends BaseOutput {
           try {
             var i = 0
             rows.foreach(row => {
-              if (i > 100000) {
+              if (i > threads) {
                 pipeline.sync()
                 pipeline.clear()
                 i = 0
@@ -102,7 +108,7 @@ class Redis extends BaseOutput {
           try {
             var i = 0
             rows.foreach(row => {
-              if (i > 10000) {
+              if (i > threads) {
                 pipeline.sync()
                 pipeline.clear()
                 i = 0
