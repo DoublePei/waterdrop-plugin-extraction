@@ -90,12 +90,8 @@ class MyJdbcById extends BaseStaticInput {
       .option("password", password)
       .load()
 
-    var map: Map[String, String] = Map()
-    comment.collect().foreach(x => {
-      val value = x.getString(0)
-      val value1 = x.getString(1)
-      map.+=(value -> value1)
-    })
+
+
 
 
     val length = ds.collect().length
@@ -163,6 +159,21 @@ class MyJdbcById extends BaseStaticInput {
     prop.setProperty("driver", driver)
 
     var frame = spark.read.jdbc(url, tableName, arr, prop)
+
+
+    var map: Map[String, String] = Map()
+    comment.collect().foreach(x => {
+      val value = x.getString(0)
+      val value1 = x.getString(1)
+      map.+=(value -> value1)
+    })
+
+    val schemas = frame.schema.map(s => {
+      s.withComment(map(s.name))
+    })
+
+     frame = spark.createDataFrame(frame.rdd, StructType(schemas)).repartition(repartition)
+
     val strings = columns.split(",")
     val names = frame.schema.fieldNames
 
@@ -171,12 +182,6 @@ class MyJdbcById extends BaseStaticInput {
         frame = frame.drop(frame.col(field))
       }
     })
-    val schemas = frame.schema.map(s => {
-      s.withComment(map(s.name))
-    })
-
-    val dataframe = spark.createDataFrame(ds.rdd, StructType(schemas)).repartition(repartition)
-    dataframe
-
+      frame
   }
 }
