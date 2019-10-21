@@ -53,31 +53,41 @@ class SyncToHive extends BaseFilter {
     sb.append(s"CREATE TABLE IF NOT EXISTS $hivedbtbls (")
     fields.foreach(x => {
       val name = x.name
+      val option = x.getComment()
       sb.append(s"$name ")
       x.dataType match {
         case IntegerType | BooleanType | LongType | ByteType | ShortType => {
-          sb.append(s" bigint ,")
+          sb.append(s" bigint ")
         }
         case FloatType | DoubleType => {
-          sb.append(s" double ,")
+          sb.append(s" double ")
         }
         case StringType | TimestampType | DateType => {
-          sb.append(s" string ,")
+          sb.append(s" string ")
         }
-        case dt: DecimalType =>{
-           dt.scale match {
-             case  0  => {
-               sb.append(s" bigint ,")
-             }
-             case _ =>{
-               sb.append(s" double ,")
-             }
-           }
+        case dt: DecimalType => {
+          dt.scale match {
+            case 0 => {
+              sb.append(s" bigint ")
+            }
+            case _ => {
+              sb.append(s" double ")
+            }
+          }
         }
         case _ => {
-          sb.append(s" string ,")
+          sb.append(s" string ")
         }
       }
+      val comment = option match {
+        case Some(s) => {
+          s
+        }
+        case None => {
+          ""
+        }
+      }
+      sb.append(s" comment '$comment',")
     })
     sb = sb.deleteCharAt(sb.length - 1)
     sb.append(")")

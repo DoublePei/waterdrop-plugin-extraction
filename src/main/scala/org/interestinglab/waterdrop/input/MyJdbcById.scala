@@ -2,7 +2,7 @@ package org.interestinglab.waterdrop.input
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.github.interestinglab.waterdrop.apis.BaseStaticInput
-import org.apache.spark.sql.types.{DecimalType, IntegerType}
+import org.apache.spark.sql.types.{DecimalType, IntegerType, StructType}
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
 
 import scala.collection.mutable.ArrayBuffer
@@ -53,6 +53,7 @@ class MyJdbcById extends BaseStaticInput {
     val columns = column.replaceAll("\\s", "")
     val repartition = config.getInt("repartition")
     val where = config.getString("where")
+    val database = config.getString("database")
     val driver = config.hasPath("driver") match {
       case true => {
         val tmp = config.getString("driver")
@@ -80,6 +81,22 @@ class MyJdbcById extends BaseStaticInput {
       .option("user", user)
       .option("password", password)
       .load()
+
+    val comment = spark.read.format("jdbc")
+      .option("driver", driver)
+      .option("url", url)
+      .option("dbtable", s"(select COLUMN_NAME,COLUMN_COMMENT from information_schema.columns where table_name = '$tableName' and table_schema = '$database' ) simple")
+      .option("user", user)
+      .option("password", password)
+      .load()
+
+    var map: Map[String, String] = Map()
+    comment.collect().foreach(x => {
+      val value = x.getString(0)
+      val value1 = x.getString(1)
+      map.+=(value -> value1)
+    })
+
 
     val length = ds.collect().length
     var lower: Long = 0L
@@ -138,19 +155,28 @@ class MyJdbcById extends BaseStaticInput {
       predicates = array.map { case (start, end) => s" $split>= $start and $split < $end"
       }
     }
+
     val arr = predicates.toArray
     val prop = new java.util.Properties
     prop.setProperty("user", user)
     prop.setProperty("password", password)
     prop.setProperty("driver", driver)
+
     var frame = spark.read.jdbc(url, tableName, arr, prop)
     val strings = columns.split(",")
     val names = frame.schema.fieldNames
+
     names.foreach(field => {
       if (!strings.contains(field)) {
         frame = frame.drop(frame.col(field))
       }
     })
-    frame
+    val schemas = frame.schema.map(s => {
+      s.withComment(map(s.name))
+    })
+
+    val dataframe = spark.createDataFrame(ds.rdd, StructType(schemas)).repartition(repartition)
+    dataframe
+
   }
 }
