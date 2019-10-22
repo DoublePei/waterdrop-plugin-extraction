@@ -82,18 +82,6 @@ class MyJdbcById extends BaseStaticInput {
       .option("password", password)
       .load()
 
-    val comment = spark.read.format("jdbc")
-      .option("driver", driver)
-      .option("url", url)
-      .option("dbtable", s"(select COLUMN_NAME,COLUMN_COMMENT from information_schema.columns where table_name = '$tableName' and table_schema = '$database' ) simple")
-      .option("user", user)
-      .option("password", password)
-      .load()
-
-
-
-
-
     val length = ds.collect().length
     var lower: Long = 0L
     var upper: Long = Integer.MAX_VALUE
@@ -161,19 +149,25 @@ class MyJdbcById extends BaseStaticInput {
     var frame = spark.read.jdbc(url, tableName, arr, prop)
 
 
-    var map: Map[String, String] = Map()
-    comment.collect().foreach(x => {
-      val value = x.getString(0)
-      val value1 = x.getString(1)
-      map.+=(value -> value1)
-    })
-
-    val schemas = frame.schema.map(s => {
-      s.withComment(map(s.name))
-    })
-
-     frame = spark.createDataFrame(frame.rdd, StructType(schemas)).repartition(repartition)
-
+    if(driver.contains("mysql")){
+      val comment =spark.read.format("jdbc")
+        .option("driver", driver)
+        .option("url", url)
+        .option("dbtable", s"(select COLUMN_NAME,COLUMN_COMMENT from information_schema.columns where table_name = '$tableName' and table_schema = '$database' ) simple")
+        .option("user", user)
+        .option("password", password)
+        .load()
+      var map: Map[String, String] = Map()
+      comment.collect().foreach(x => {
+        val value = x.getString(0)
+        val value1 = x.getString(1).replaceAll("\'", "")
+        map.+=(value -> value1)
+      })
+      val schemas = frame.schema.map(s => {
+        s.withComment(map(s.name))
+      })
+      frame = spark.createDataFrame(frame.rdd, StructType(schemas)).repartition(repartition)
+    }
     val strings = columns.split(",")
     val names = frame.schema.fieldNames
 
