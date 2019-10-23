@@ -148,12 +148,12 @@ class MyJdbcById extends BaseStaticInput {
 
     var frame = spark.read.jdbc(url, tableName, arr, prop)
 
-
+    val tmp = tableName.replaceAll("`","")
     if(driver.contains("mysql")){
       val comment =spark.read.format("jdbc")
         .option("driver", driver)
         .option("url", url)
-        .option("dbtable", s"(select COLUMN_NAME,COLUMN_COMMENT from information_schema.columns where table_name = '$tableName' and table_schema = '$database' ) simple")
+        .option("dbtable", s"(select COLUMN_NAME,COLUMN_COMMENT from information_schema.columns where table_name = '$tmp' and table_schema = '$database' ) simple")
         .option("user", user)
         .option("password", password)
         .load()
