@@ -39,14 +39,14 @@ class SyncToHive extends BaseFilter {
 
   }
 
-  override def process(spark: SparkSession, df: Dataset[Row]): Dataset[Row] = {
+  override def process(spark: SparkSession, dfs: Dataset[Row]): Dataset[Row] = {
 
     val repartition = this.conf.getInt("repartition")
     val tableName = this.conf.getString("table_name")
     val partitionKeys = this.conf.getString("partitionKeys")
     val partitionValues = this.conf.getString("partitionValues").toString
     val hivedbtbls = this.conf.getString("hivedbtbls");
-
+    val df = dfs.repartition(repartition)
     val fields = df.schema.fields
     val fieldNames = df.schema.fieldNames
     var sb = new StringBuilder
@@ -137,7 +137,7 @@ class SyncToHive extends BaseFilter {
     log.info(s"####################### insert sql is : $sql #############################")
 
     df.createOrReplaceTempView(tableName.toString)
-    create_task(spark.sql(sql.toString()).repartition(repartition)) match {
+    create_task(spark.sql(sql.toString())) match {
       case Success(ds) => ds
       case Failure(f) => {
         println(f)
