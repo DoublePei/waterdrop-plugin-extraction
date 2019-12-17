@@ -88,6 +88,7 @@ class Redis extends BaseOutput {
                 pipeline.clear()
                 i = 0
               }
+              i = i + 1
               pipeline.set(row.getString(0), row.getString(1))
             })
             pipeline.sync()
@@ -113,6 +114,7 @@ class Redis extends BaseOutput {
                 pipeline.clear()
                 i = 0
               }
+              i = i + 1
               val maps = Map(row.schema.fields(1).name -> row.getString(1), row.schema.fields(2).name -> row.getString(2).toString)
               pipeline.hmset(row.getString(0), maps)
             })
