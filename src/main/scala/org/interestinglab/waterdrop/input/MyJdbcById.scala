@@ -181,10 +181,12 @@ class MyJdbcById extends BaseStaticInput {
         frame = frame.drop(frame.col(field))
       }
     })
-//更换位置
+    //更换位置
     frame.createOrReplaceTempView("tmp_table");
     val tmpSQL: String = "select " + columns + " from tmp_table"
     frame = spark.sql(tmpSQL)
+    val str = frame.schema.fieldNames.mkString(",")
+    println("spark输出的数据格式为" + str)
     frame
   }
 }
