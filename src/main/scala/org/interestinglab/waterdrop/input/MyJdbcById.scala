@@ -3,9 +3,12 @@ package org.interestinglab.waterdrop.input
 import com.typesafe.config.{Config, ConfigFactory}
 import io.github.interestinglab.waterdrop.apis.BaseStaticInput
 import org.apache.spark.sql.types.{DecimalType, IntegerType, StructType}
-import org.apache.spark.sql.{Dataset, Row, SparkSession}
+import org.apache.spark.sql.{Column, Dataset, Row, SparkSession}
 
+import scala.collection.immutable.Queue
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.internal.util.TableDef.Column
 
 class MyJdbcById extends BaseStaticInput {
 
@@ -39,6 +42,7 @@ class MyJdbcById extends BaseStaticInput {
     }
   }
 
+
   override def prepare(spark: SparkSession): Unit = {
     super.prepare(spark)
   }
@@ -67,6 +71,7 @@ class MyJdbcById extends BaseStaticInput {
       }
       case false => "com.mysql.jdbc.Driver"
     }
+
 
     var sql = ""
     if (where != null && !"".equals(where)) {
@@ -148,9 +153,9 @@ class MyJdbcById extends BaseStaticInput {
 
     var frame = spark.read.jdbc(url, tableName, arr, prop)
 
-    val tmp = tableName.replaceAll("`","")
-    if(driver.contains("mysql")){
-      val comment =spark.read.format("jdbc")
+    val tmp = tableName.replaceAll("`", "")
+    if (driver.contains("mysql")) {
+      val comment = spark.read.format("jdbc")
         .option("driver", driver)
         .option("url", url)
         .option("dbtable", s"(select COLUMN_NAME,COLUMN_COMMENT from information_schema.columns where table_name = '$tmp' and table_schema = '$database' ) simple")
@@ -176,6 +181,10 @@ class MyJdbcById extends BaseStaticInput {
         frame = frame.drop(frame.col(field))
       }
     })
-      frame
+//更换位置
+    frame.createOrReplaceTempView("tmp_table");
+    val tmpSQL: String = "select " + columns + " from tmp_table"
+    frame = spark.sql(tmpSQL)
+    frame
   }
 }
