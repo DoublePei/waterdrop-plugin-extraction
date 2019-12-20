@@ -129,7 +129,7 @@ class SyncToHive extends BaseFilter {
       sql.append(")")
     }
 
-    val cloumns = columns.map(filed => {
+    val cloumns = columns.split(",").map(filed => {
       s"`$filed`"
     }).mkString(",")
 
