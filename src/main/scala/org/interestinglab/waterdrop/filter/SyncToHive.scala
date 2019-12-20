@@ -43,6 +43,8 @@ class SyncToHive extends BaseFilter {
 
     val repartition = this.conf.getInt("repartition")
     val tableName = this.conf.getString("table_name")
+    val column = this.conf.getString("columns")
+    val columns = column.replaceAll("\\s", "")
     val partitionKeys = this.conf.getString("partitionKeys")
     val partitionValues = this.conf.getString("partitionValues").toString
     val hivedbtbls = this.conf.getString("hivedbtbls");
@@ -127,11 +129,11 @@ class SyncToHive extends BaseFilter {
       sql.append(")")
     }
 
-    val columns = fieldNames.map(filed => {
+    val cloumns = columns.map(filed => {
       s"`$filed`"
     }).mkString(",")
 
-    sql.append(s" select $columns from $tableName ")
+    sql.append(s" select $cloumns from $tableName ")
 
     println(sql.toString())
     log.info(s"####################### insert sql is : $sql #############################")
