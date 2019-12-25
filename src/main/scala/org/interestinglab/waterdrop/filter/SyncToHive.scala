@@ -129,11 +129,11 @@ class SyncToHive extends BaseFilter {
     }
 
     val cloumns = columns.split(",").map(e => e.trim).map(filed => {
-      if (filed.contains(" as ")) {
-        filed
+      val v = filed.replaceAll("\\s+(as|AS)\\s+", " as ")
+      if (v.contains(" as ")) {
+        v
       } else {
-        s"`$filed`"
-
+        s"`$v`"
       }
     }).mkString(",")
 
