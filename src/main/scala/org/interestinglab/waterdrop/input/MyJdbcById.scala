@@ -172,7 +172,14 @@ class MyJdbcById extends BaseStaticInput {
       })
       frame = spark.createDataFrame(frame.rdd, StructType(schemas)).repartition(repartition)
     }
-    val strings = columns.split(",").map(s=>s.trim)
+    val strings = columns.split(",").map(s => s.trim).map(x => {
+      if (x.contains(" as ")) {
+        val strings: Array[String] = x.split(" ")
+        strings(strings.length - 1)
+      } else {
+        x
+      }
+    })
     val names = frame.schema.fieldNames
 
     names.foreach(field => {
