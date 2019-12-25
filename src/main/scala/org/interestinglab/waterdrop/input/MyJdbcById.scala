@@ -53,8 +53,7 @@ class MyJdbcById extends BaseStaticInput {
     val user = config.getString("user")
     val password = config.getString("password")
     val url = config.getString("url")
-    val column = config.getString("columns")
-    val columns = column.replaceAll("\\s", "")
+    val columns = config.getString("columns")
     val repartition = config.getInt("repartition")
     val where = config.getString("where")
     val database = config.getString("database")
@@ -173,7 +172,7 @@ class MyJdbcById extends BaseStaticInput {
       })
       frame = spark.createDataFrame(frame.rdd, StructType(schemas)).repartition(repartition)
     }
-    val strings = columns.split(",")
+    val strings = columns.split(",").map(s=>s.trim)
     val names = frame.schema.fieldNames
 
     names.foreach(field => {
