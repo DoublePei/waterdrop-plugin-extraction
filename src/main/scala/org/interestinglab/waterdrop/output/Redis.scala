@@ -115,6 +115,7 @@ class Redis extends BaseOutput {
                 i = 0
               }
               i = i + 1
+              row.schema.fields
               val maps = Map(row.schema.fields(1).name -> row.getString(1), row.schema.fields(2).name -> row.getString(2).toString)
               pipeline.hmset(row.getString(0), maps)
             })
@@ -128,12 +129,41 @@ class Redis extends BaseOutput {
         })
       }
       case _ => {
-        throw new RuntimeException(s"Text data source supports only 2 columns," +
-          s" and you have ${ds.schema.size} columns.")
+        ds.foreachPartition(rows => {
+          val clientUtil = RedisClientUtil(config).getClient()
+          val resource = clientUtil.getResource
+          val pipeline = resource.pipelined()
+          try {
+            var i = 0
+            rows.foreach(row => {
+              if (i > threads) {
+                pipeline.sync()
+                pipeline.clear()
+                i = 0
+              }
+              i = i + 1
+              val fields = row.schema.fields
+              val maps: Map[String, String] = Map[String, String]();
+              var key = ""
+              for (w <- 0 until fields.length) {
+                if (w == 0) {
+                  key = row.getString(0)
+                } else {
+                  maps.put(row.schema.fields(w).name, row.getString(w))
+                }
+              }
+              pipeline.hmset(key, maps)
+            })
+            pipeline.sync()
+          } catch {
+            case e => e.printStackTrace()
+          } finally {
+            clientUtil.close()
+            pipeline.close()
+          }
+        })
       }
     }
-
   }
-
 }
 
