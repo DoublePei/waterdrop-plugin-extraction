@@ -160,11 +160,10 @@ class Redis extends BaseOutput {
                   maps += (row.schema.fields(w).name -> row.getString(w))
                 }
               }
-              maps.keys.foreach { i =>
-                print("Key = " + i)
-                println(" Value = " + maps(i))
-              }
-
+              //              maps.keys.foreach { i =>
+              //                print("Key = " + i)
+              //                println(" Value = " + maps(i))
+              //              }
               pipeline.hmset(key, maps)
               if (expire > 0L) {
                 pipeline.pexpire(row.getString(0), expire)

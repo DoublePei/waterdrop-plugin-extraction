@@ -17,7 +17,7 @@ class RedisClientUtil(createRedisClient: () => JedisPool) extends Serializable {
 
 object RedisClientUtil {
   private val connectionPoolTimeout = 3000
-  private val soTimeOut = 3000
+  private val soTimeOut = 8000
   private val maxAttempts = 2
 
   def apply(config: Config): RedisClientUtil = {
@@ -27,7 +27,7 @@ object RedisClientUtil {
       val gopconfig = new GenericObjectPoolConfig
       gopconfig.setMaxIdle(20)
       gopconfig.setMinIdle(8)
-      gopconfig.setMaxWaitMillis(2000)
+      gopconfig.setMaxWaitMillis(20000)
       gopconfig.setTestOnBorrow(true)
       gopconfig.setMaxTotal(100)
       if (config.hasPath("port")) {
@@ -39,7 +39,7 @@ object RedisClientUtil {
           client
         }
         case false => {
-          val client = new JedisPool(gopconfig, host, port.toInt)
+          val client = new JedisPool(gopconfig, host, port.toInt, soTimeOut)
           client
         }
       }
