@@ -74,6 +74,7 @@ class Redis extends BaseOutput {
       }
       case _ => 1000
     }
+    val expire = config.getLong("expire")
     ds.schema.size match {
       case 2 => {
         ds.foreachPartition(rows => {
@@ -90,6 +91,9 @@ class Redis extends BaseOutput {
               }
               i = i + 1
               pipeline.set(row.getString(0), row.getString(1))
+              if (expire > 0L) {
+                pipeline.pexpire(row.getString(0), expire)
+              }
             })
             pipeline.sync()
 
@@ -118,6 +122,9 @@ class Redis extends BaseOutput {
               row.schema.fields
               val maps = Map(row.schema.fields(1).name -> row.getString(1), row.schema.fields(2).name -> row.getString(2).toString)
               pipeline.hmset(row.getString(0), maps)
+              if (expire > 0L) {
+                pipeline.pexpire(row.getString(0), expire)
+              }
             })
             pipeline.sync()
           } catch {
@@ -153,6 +160,9 @@ class Redis extends BaseOutput {
                 }
               }
               pipeline.hmset(key, maps)
+              if (expire > 0L) {
+                pipeline.pexpire(row.getString(0), expire)
+              }
             })
             pipeline.sync()
           } catch {
