@@ -136,6 +136,7 @@ class Redis extends BaseOutput {
         })
       }
       case _ => {
+        println("start to save to redis by hash type ...")
         ds.foreachPartition(rows => {
           val clientUtil = RedisClientUtil(config).getClient()
           val resource = clientUtil.getResource
@@ -150,15 +151,20 @@ class Redis extends BaseOutput {
               }
               i = i + 1
               val fields = row.schema.fields
-              val maps: Map[String, String] = Map[String, String]();
+              var maps: Map[String, String] = Map()
               var key = ""
               for (w <- 0 until fields.length) {
                 if (w == 0) {
                   key = row.getString(0)
                 } else {
-                  maps.put(row.schema.fields(w).name, row.getString(w))
+                  maps += (row.schema.fields(w).name -> row.getString(w))
                 }
               }
+              maps.keys.foreach { i =>
+                print("Key = " + i)
+                println(" Value = " + maps(i))
+              }
+
               pipeline.hmset(key, maps)
               if (expire > 0L) {
                 pipeline.pexpire(row.getString(0), expire)
