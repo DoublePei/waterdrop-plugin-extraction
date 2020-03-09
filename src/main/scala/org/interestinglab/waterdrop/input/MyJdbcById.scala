@@ -172,6 +172,7 @@ class MyJdbcById extends BaseStaticInput {
       })
       frame = spark.createDataFrame(frame.rdd, StructType(schemas)).repartition(repartition)
     }
+    //逗号分隔后替换as
     val strings = columns.split(",").map(s => s.trim).map(x => {
       val v = x.replaceAll("\\s+(as|AS)\\s+", " as ")
       if (v.contains(" as ")) {

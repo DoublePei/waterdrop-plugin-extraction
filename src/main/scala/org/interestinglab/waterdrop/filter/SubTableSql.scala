@@ -149,7 +149,15 @@ class SubTableSql extends BaseFilter {
       prop.setProperty("password", password)
       prop.setProperty("driver", "com.mysql.jdbc.Driver")
       var frame = spark.read.jdbc(url, tableName, arr, prop)
-      val strings = columns.split(",")
+      val strings = columns.split(",").map(s => s.trim).map(x => {
+        val v = x.replaceAll("\\s+(as|AS)\\s+", " as ")
+        if (v.contains(" as ")) {
+          val strings: Array[String] = v.split(" ")
+          strings(strings.length - 1)
+        } else {
+          v
+        }
+      })
       val names = frame.schema.fieldNames
       names.foreach(field => {
         if (!strings.contains(field)) {
@@ -230,11 +238,16 @@ class SubTableSql extends BaseFilter {
         sql.append(s"PARTITION (shard='$tableName')")
       }
 
-      val columnlist = fieldNames.map(filed => {
-        s"`$filed`"
+      val cloumns = columns.split(",").map(e => e.trim).map(filed => {
+        val v = filed.replaceAll("\\s+(as|AS)\\s+", " as ")
+        if (v.contains(" as ")) {
+          v
+        } else {
+          s"`$v`"
+        }
       }).mkString(",")
 
-      sql.append(s" select $columnlist from $tableName ")
+      sql.append(s" select $cloumns from $tableName ")
 
       println(sql.toString())
       log.info(s"####################### insert sql is : $sql #############################")
