@@ -4,10 +4,8 @@ import java.sql.{Connection, DriverManager, PreparedStatement}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.github.interestinglab.waterdrop.apis.BaseOutput
-import org.apache.commons.dbutils.QueryRunner
 import org.apache.commons.lang3.StringUtils
-import org.apache.spark.sql.{Dataset, Row, SaveMode}
-import org.interestinglab.waterdrop.output.test.getConnection
+import org.apache.spark.sql.{Dataset, Row}
 
 class MCD extends BaseOutput {
   var config: Config = ConfigFactory.empty()

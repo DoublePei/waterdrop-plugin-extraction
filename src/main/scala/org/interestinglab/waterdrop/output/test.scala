@@ -3,10 +3,6 @@ package org.interestinglab.waterdrop.output
 import java.sql.{Connection, DriverManager, PreparedStatement}
 
 import org.apache.commons.lang3.StringUtils
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.{Dataset, Row, SparkSession}
-
-import scala.collection.mutable.ArrayBuffer
 
 object test {
   def main(args: Array[String]): Unit = {
