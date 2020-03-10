@@ -1,12 +1,13 @@
 package org.interestinglab.waterdrop.output
 
-import java.sql.{Connection, DriverManager}
+import java.sql.{Connection, DriverManager, PreparedStatement}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.github.interestinglab.waterdrop.apis.BaseOutput
 import org.apache.commons.dbutils.QueryRunner
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.{Dataset, Row, SaveMode}
+import org.interestinglab.waterdrop.output.test.getConnection
 
 class MCD extends BaseOutput {
   var config: Config = ConfigFactory.empty()
@@ -95,27 +96,33 @@ class MCD extends BaseOutput {
     if (StringUtils.isNotBlank(deleteSQL)) {
       //当删除的sql不为空的时候
       val bool = validateTableExist(table)
-      println(s"是否需要删除数据 $bool")
+      println(s"是否需要删除数据历史数据： $bool")
       if (bool) {
-        val conn = getConnection()
-        conn.setAutoCommit(false)
-        val runner = new QueryRunner()
+        var conn: Connection = null
+        var prepare: PreparedStatement = null
         try {
-          runner.update(conn, deleteSQL)
+          conn = getConnection()
+          conn.setAutoCommit(false)
+          prepare = conn.prepareStatement(deleteSQL);
+          prepare.executeUpdate()
           conn.commit()
           println(s"删除数据完成")
-
         } catch {
           case e => {
             e.printStackTrace()
             System.exit(1)
           }
         } finally {
-          conn.close()
+          if (conn != null) {
+            conn.close()
+          }
+          if (prepare != null) {
+            prepare.close()
+          }
         }
       }
     }
-    println(s"写入数据。。写入模式为: $saveMode")
+    println(s"写入数据，模式为: $saveMode")
     //删除数据后进行写入数据
     df.repartition(partition)
       .write
