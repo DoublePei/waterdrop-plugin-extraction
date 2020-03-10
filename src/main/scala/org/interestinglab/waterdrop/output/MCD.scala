@@ -90,17 +90,22 @@ class MCD extends BaseOutput {
     val database = config.getString("database")
     val table = config.getString("table")
     val partition = config.getInt("partition")
-
+    log.info("start to saving data to mysql..")
+    log.info(s"delete sql is $deleteSQL")
     //首先判断是否是需要删除历史数据。当saveMode为append的时候才需要考虑删除数据
-    if (!StringUtils.isBlank(deleteSQL)) {
+    if (StringUtils.isNotBlank(deleteSQL)) {
       //当删除的sql不为空的时候
-      if (validateTableExist(database, table)) {
+      val bool = validateTableExist(database, table)
+      log.info(s"是否需要删除数据 $bool")
+      if (bool) {
         val conn = getConnection()
         conn.setAutoCommit(false)
         val runner = new QueryRunner()
         try {
           runner.update(conn, deleteSQL)
           conn.commit()
+          log.info(s"删除数据完成")
+
         } catch {
           case e => {
             e.printStackTrace()
@@ -111,6 +116,7 @@ class MCD extends BaseOutput {
         }
       }
     }
+    log.info(s"写入数据。。写入模式为: $saveMode")
     //删除数据后进行写入数据
     df.repartition(partition)
       .write
