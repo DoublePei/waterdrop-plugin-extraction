@@ -59,14 +59,14 @@ class MCD extends BaseOutput {
     conn
   }
 
-  def validateTableExist(db: String, tb: String): Boolean = {
+  def validateTableExist(tb: String): Boolean = {
     var conn: Connection = null
     var flag = false
     try {
       conn = getConnection()
       val meta = conn.getMetaData
       val t = Array("TABLE")
-      val rs = meta.getTables(null, null, db + "." + tb, t)
+      val rs = meta.getTables(null, null, tb, t)
       flag = rs.next
     } catch {
       case e => e.printStackTrace()
@@ -87,7 +87,6 @@ class MCD extends BaseOutput {
 
     val saveMode = config.getString("save_mode")
     val deleteSQL = config.getString("delete_sql")
-    val database = config.getString("database")
     val table = config.getString("table")
     val partition = config.getInt("partition")
     println("start to saving data to mysql..")
@@ -95,7 +94,7 @@ class MCD extends BaseOutput {
     //首先判断是否是需要删除历史数据。当saveMode为append的时候才需要考虑删除数据
     if (StringUtils.isNotBlank(deleteSQL)) {
       //当删除的sql不为空的时候
-      val bool = validateTableExist(database, table)
+      val bool = validateTableExist(table)
       println(s"是否需要删除数据 $bool")
       if (bool) {
         val conn = getConnection()
