@@ -1,14 +1,14 @@
 package org.interestinglab.waterdrop.output
 
-import java.util.Map
-import java.util.Properties
-import java.math.BigDecimal
 import java.text.SimpleDateFormat
+import java.util
+import java.util.Properties
+import java.math.BigDecimal;
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.github.interestinglab.waterdrop.apis.BaseOutput
 import io.github.interestinglab.waterdrop.config.TypesafeConfigUtils
-import io.github.interestinglab.waterdrop.output.batch.Clickhouse
+import org.apache.spark.sql.{Dataset, Row, SparkSession}
 import ru.yandex.clickhouse.except.{ClickHouseException, ClickHouseUnknownException}
 import ru.yandex.clickhouse.{BalancedClickhouseDataSource, ClickHouseConnectionImpl, ClickHousePreparedStatement}
 
@@ -17,7 +17,6 @@ import scala.collection.immutable.HashMap
 import scala.collection.mutable.WrappedArray
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
-import org.apache.spark.sql.{Dataset, Row, SparkSession}
 
 class QttCK extends BaseOutput {
 
