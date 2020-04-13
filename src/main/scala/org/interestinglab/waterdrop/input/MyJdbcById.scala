@@ -121,6 +121,9 @@ class MyJdbcById extends BaseStaticInput {
             upper = ds.collect()(0).getAs[Long](1)
           }
         }
+        if (lower == upper && lower != 0) {
+          lower += 1
+        }
         (lower, upper)
       }
       case _ => {
