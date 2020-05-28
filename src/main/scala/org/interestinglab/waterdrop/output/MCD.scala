@@ -83,6 +83,12 @@ class MCD extends BaseOutput {
     prop.setProperty("driver", "com.mysql.jdbc.Driver")
     prop.setProperty("user", config.getString("user"))
     prop.setProperty("password", config.getString("password"))
+    if (config.hasPath("batchsize")) {
+      prop.setProperty("batchsize", config.getString("batchsize"))
+    } else {
+      prop.setProperty("batchsize", "2000")
+    }
+    prop.setProperty("isolationLevel", "READ_COMMITTED")
 
     val saveMode = config.getString("save_mode")
     val deleteSQL = config.getString("delete_sql")
@@ -90,6 +96,7 @@ class MCD extends BaseOutput {
     val partition = config.getInt("partition")
     println("start to saving data to mysql..")
     println(s"delete sql is $deleteSQL")
+
     //首先判断是否是需要删除历史数据。当saveMode为append的时候才需要考虑删除数据
     if (StringUtils.isNotBlank(deleteSQL)) {
       //当删除的sql不为空的时候
@@ -126,5 +133,6 @@ class MCD extends BaseOutput {
       .write
       .mode(saveMode)
       .jdbc(config.getString("url"), config.getString("table"), prop)
+
   }
 }
