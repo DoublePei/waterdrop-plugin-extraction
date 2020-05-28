@@ -86,7 +86,7 @@ class MCD extends BaseOutput {
     if (config.hasPath("batchsize")) {
       prop.setProperty("batchsize", config.getString("batchsize"))
     } else {
-      prop.setProperty("batchsize", "2000")
+      prop.setProperty("batchsize", "200")
     }
     prop.setProperty("isolationLevel", "READ_COMMITTED")
 
