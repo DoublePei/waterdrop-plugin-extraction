@@ -89,6 +89,7 @@ class MCD extends BaseOutput {
       prop.setProperty("batchsize", "200")
     }
     prop.setProperty("isolationLevel", "READ_COMMITTED")
+    prop.setProperty("truncate","true")
 
     val saveMode = config.getString("save_mode")
     val deleteSQL = config.getString("delete_sql")
