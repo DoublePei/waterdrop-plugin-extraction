@@ -3,7 +3,7 @@ package org.interestinglab.waterdrop.input
 import com.alibaba.fastjson.JSON
 import com.mongodb.spark.MongoSpark
 import com.mongodb.spark.config.ReadConfig
-import io.github.interestinglab.waterdrop.config.{Config, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory}
 import io.github.interestinglab.waterdrop.apis.BaseStaticInput
 import io.github.interestinglab.waterdrop.config.TypesafeConfigUtils
 import io.github.interestinglab.waterdrop.utils.SparkSturctTypeUtil
